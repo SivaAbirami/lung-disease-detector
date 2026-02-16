@@ -51,17 +51,32 @@ def copy_images(src_dir, dest_dir):
             
     print(f"  -> Copied {count} images.")
 
+    print(f"  -> Copied {count} images.")
+
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Prepare dataset for training.")
+    parser.add_argument("--covid_path", type=str, help="Path to manually downloaded COVID-19 Radiography Database", default=None)
+    parser.add_argument("--tb_path", type=str, help="Path to manually downloaded TB Chest X-ray Database", default=None)
+    args = parser.parse_args()
+
     setup_dirs()
     
-    print("\n--- Downloading COVID-19 Radiography Database ---")
-    covid_path = kagglehub.dataset_download("tawsifurrahman/covid19-radiography-database")
-    print(f"Downloaded to: {covid_path}")
-    
+    # --- COVID-19 DATASET ---
+    if args.covid_path:
+        print(f"\n--- Using Local COVID-19 Database: {args.covid_path} ---")
+        covid_path = args.covid_path
+    else:
+        print("\n--- Downloading COVID-19 Radiography Database ---")
+        try:
+            covid_path = kagglehub.dataset_download("tawsifurrahman/covid19-radiography-database")
+            print(f"Downloaded to: {covid_path}")
+        except Exception as e:
+            print(f"Error downloading COVID dataset: {e}")
+            print("Tip: Ensure you have your Kaggle API key set up (kaggle.json).")
+            return
+
     print("\nProcessing COVID-19 Data...")
-    # Map: Source Folder -> Destination Folder
-    # Note check if downloaded structure has dataset name as root
-    # Usually kagglehub returns path to the dataset root
     
     # 1. COVID-19
     copy_images(
@@ -87,14 +102,22 @@ def main():
         dest_dir=COMBINED_DIR / "Normal"
     )
 
-    print("\n--- Downloading Tuberculosis TB Chest X-ray Database ---")
-    tb_path = kagglehub.dataset_download("tawsifurrahman/tuberculosis-tb-chest-xray-dataset")
-    print(f"Downloaded to: {tb_path}")
+    # --- TUBERCULOSIS DATASET ---
+    if args.tb_path:
+        print(f"\n--- Using Local TB Database: {args.tb_path} ---")
+        tb_path = args.tb_path
+    else:
+        print("\n--- Downloading Tuberculosis TB Chest X-ray Database ---")
+        try:
+            tb_path = kagglehub.dataset_download("tawsifurrahman/tuberculosis-tb-chest-xray-dataset")
+            print(f"Downloaded to: {tb_path}")
+        except Exception as e:
+            print(f"Error downloading TB dataset: {e}")
+            return
     
     print("\nProcessing Tuberculosis Data...")
     
     # 5. Tuberculosis
-    # Check structure. User says: TB_Chest_Radiography_Database / Tuberculosis
     copy_images(
         src_dir=os.path.join(tb_path, "TB_Chest_Radiography_Database", "Tuberculosis"),
         dest_dir=COMBINED_DIR / "Tuberculosis"

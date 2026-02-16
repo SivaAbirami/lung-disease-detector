@@ -67,25 +67,42 @@ cd lung-disease-detector
    ```
 
 ### 1.3 Dataset & Model Setup (Crucial!)
-Since the dataset and trained model are large, they are **not** in the git repo. You must set them up manually.
+Since the dataset and trained model are large, they are **not** in the git repo. You must set them up manually using one of the two methods below.
+
+#### Method A: Full Automation (Recommended)
+Requires a Kaggle account.
+
+1. **Get Kaggle API Key:**
+   - Go to your Kaggle Account Settings -> API -> Create New Token.
+   - Saves a file `kaggle.json`.
+   - Place it in:
+     - **Windows:** `C:\Users\<YourUsername>\.kaggle\kaggle.json`
+     - **Mac/Linux:** `~/.kaggle/kaggle.json`
+
+2. **Run Script:**
+   ```bash
+   cd backend
+   python prepare_data.py
+   ```
+   *The script will automatically download the datasets and arrange them into `dataset/combined/`.*
+
+#### Method B: Manual Download
+If you prefer to download the files yourself.
 
 1. **Download Data:**
-   - Download [COVID-19 Radiography Database](https://www.kaggle.com/tawsifurrahman/covid19-radiography-database)
-   - Download [TB Chest X-ray Database](https://www.kaggle.com/tawsifurrahman/tuberculosis-tb-chest-xray-dataset)
+   - [COVID-19 Radiography Database](https://www.kaggle.com/tawsifurrahman/covid19-radiography-database)
+   - [TB Chest X-ray Database](https://www.kaggle.com/tawsifurrahman/tuberculosis-tb-chest-xray-dataset)
 
-2. **Organize Folders:**
-   - Extract them so you have the raw images.
-   - Run the helper script to structure the folder for training:
+2. **Extract Files:**
+   - Extract both zip files to a folder (e.g., `Downloads`).
+
+3. **Run Script with Paths:**
+   - Point the script to your extracted folders:
      ```bash
-     # You might need to edit this script to point to your download location first!
-     python prepare_data.py
+     cd backend
+     python prepare_data.py --covid_path "C:/Users/.../Downloads/COVID-19_Radiography_Dataset" --tb_path "C:/Users/.../Downloads/TB_Chest_Radiography_Database"
      ```
-   - OR manually ensure folders are in `backend/dataset/combined/`:
-     - `COVID-19/`
-     - `Tuberculosis/`
-     - `Bacterial Pneumonia/`
-     - `Viral Pneumonia/`
-     - `Normal/`
+   *The script will copy and arrange the images into `dataset/combined/` for you.*
 
 3. **Train the Model:**
    ```bash

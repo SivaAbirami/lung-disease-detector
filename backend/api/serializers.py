@@ -32,6 +32,9 @@ class PredictionSerializer(serializers.ModelSerializer):
             "created_at",
             "processing_time_ms",
             "cached_result",
+            "true_class",
+            "is_corrected",
+            "corrected_at",
         ]
         read_only_fields = [
             "id",
@@ -40,6 +43,9 @@ class PredictionSerializer(serializers.ModelSerializer):
             "created_at",
             "processing_time_ms",
             "cached_result",
+            "true_class",
+            "is_corrected",
+            "corrected_at",
         ]
 
     def get_image_url(self, obj: Prediction) -> str | None:
@@ -51,4 +57,13 @@ class PredictionSerializer(serializers.ModelSerializer):
 
     def get_confidence_percentage(self, obj: Prediction) -> float:
         return obj.confidence_percentage
+
+
+class FeedbackSerializer(serializers.Serializer):
+    """Accepts a user correction for a prediction."""
+
+    true_class = serializers.ChoiceField(
+        choices=Prediction.DiseaseClass.choices,
+        help_text="The correct disease class for this X-ray.",
+    )
 

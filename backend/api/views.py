@@ -167,3 +167,63 @@ class RecommendationView(APIView):
         recs = get_disease_recommendations(disease_name)
         return Response(recs, status=status.HTTP_200_OK)
 
+
+class PredictionFeedbackView(APIView):
+    """Accept user correction for a prediction and save image for retraining."""
+
+    def post(self, request, prediction_id: int, *args, **kwargs):
+        import shutil
+        import uuid
+        from pathlib import Path
+        from django.conf import settings
+        from django.utils import timezone
+        from .serializers import FeedbackSerializer
+
+        try:
+            prediction = Prediction.objects.get(id=prediction_id)
+        except Prediction.DoesNotExist:
+            return Response(
+                {"detail": "Prediction not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = FeedbackSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        true_class = serializer.validated_data["true_class"]
+
+        # Update database record
+        prediction.true_class = true_class
+        prediction.is_corrected = True
+        prediction.corrected_at = timezone.now()
+        prediction.save(update_fields=["true_class", "is_corrected", "corrected_at"])
+
+        # Copy image to training dataset for future retraining
+        try:
+            if prediction.image:
+                source_path = Path(prediction.image.path)
+                dataset_dir = (
+                    Path(settings.BASE_DIR) / "dataset" / "combined" / true_class
+                )
+                dataset_dir.mkdir(parents=True, exist_ok=True)
+                dest_name = f"feedback_{uuid.uuid4().hex}{source_path.suffix}"
+                dest_path = dataset_dir / dest_name
+                shutil.copy2(str(source_path), str(dest_path))
+                logger.info(
+                    "Copied feedback image to %s for class %s",
+                    dest_path,
+                    true_class,
+                )
+        except Exception as exc:
+            logger.warning("Failed to copy feedback image to dataset: %s", exc)
+
+        return Response(
+            {
+                "detail": "Feedback submitted successfully.",
+                "prediction_id": prediction.id,
+                "true_class": true_class,
+            },
+            status=status.HTTP_200_OK,
+        )
+

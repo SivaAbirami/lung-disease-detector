@@ -44,5 +44,7 @@ export const getPredictionHistory = (params) =>
 export const getRecommendations = (diseaseName) =>
   api.get(`/recommendations/${encodeURIComponent(diseaseName)}/`);
 
-export default api;
+export const submitFeedback = (predictionId, trueClass) =>
+  api.post(`/predictions/${predictionId}/feedback/`, { true_class: trueClass });
 
+export default api;

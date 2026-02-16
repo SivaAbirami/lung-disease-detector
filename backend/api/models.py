@@ -103,6 +103,24 @@ class Prediction(models.Model):
         help_text="Whether this prediction was served from cache.",
     )
 
+    # --- Feedback / Active-learning fields ---
+    true_class = models.CharField(
+        max_length=64,
+        choices=DiseaseClass.choices,
+        null=True,
+        blank=True,
+        help_text="Correct class label provided by user feedback.",
+    )
+    is_corrected = models.BooleanField(
+        default=False,
+        help_text="Whether a user has submitted a correction for this prediction.",
+    )
+    corrected_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when the correction was submitted.",
+    )
+
     class Meta:
         ordering = ("-created_at",)
         indexes = [

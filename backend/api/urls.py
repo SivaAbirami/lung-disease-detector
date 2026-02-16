@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from django.urls import path
 
-from .views import PredictView, PredictionHistoryView, TaskStatusView, RecommendationView
+from .views import (
+    PredictView,
+    PredictionHistoryView,
+    TaskStatusView,
+    RecommendationView,
+    PredictionFeedbackView,
+)
 
 
 urlpatterns = [
@@ -14,5 +20,9 @@ urlpatterns = [
         RecommendationView.as_view(),
         name="recommendations",
     ),
+    path(
+        "predictions/<int:prediction_id>/feedback/",
+        PredictionFeedbackView.as_view(),
+        name="prediction-feedback",
+    ),
 ]
-

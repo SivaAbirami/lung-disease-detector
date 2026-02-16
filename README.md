@@ -97,10 +97,15 @@ If you prefer to download the files yourself.
    - Extract both zip files to a folder (e.g., `Downloads`).
 
 3. **Run Script with Paths:**
-   - Point the script to your extracted folders:
-     ```bash
+   - Point the script to your extracted folders.
+   - **Windows Example** (if in Downloads):
+     ```powershell
      cd backend
-     python prepare_data.py --covid_path "C:/Users/.../Downloads/COVID-19_Radiography_Dataset" --tb_path "C:/Users/.../Downloads/TB_Chest_Radiography_Database"
+     python prepare_data.py --covid_path "%USERPROFILE%\Downloads\COVID-19_Radiography_Dataset" --tb_path "%USERPROFILE%\Downloads\TB_Chest_Radiography_Database"
+     ```
+   - **Mac/Linux Example**:
+     ```bash
+     python prepare_data.py --covid_path "~/Downloads/COVID-19_Radiography_Dataset" --tb_path "~/Downloads/TB_Chest_Radiography_Database"
      ```
    *The script will copy and arrange the images into `dataset/combined/` for you.*
 

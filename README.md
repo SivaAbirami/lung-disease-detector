@@ -14,11 +14,97 @@ AI-assisted lung disease screening (COVID-19, Tuberculosis, Bacterial/Viral Pneu
 - TailwindCSS
 - react-dropzone, axios, react-router, react-hot-toast
 
+- react-dropzone, axios, react-router, react-hot-toast
+
 ---
 
-## 1. Datasets (MANUAL DOWNLOAD)
+## 1. Setting up on a New Machine (Fresh Clone)
 
-Download and extract these datasets from Kaggle:
+If you have just cloned this repository to a new laptop, follow these steps to get everything running.
+
+### 1.1 Clone the Repository
+```bash
+git clone https://github.com/SivaAbirami/lung-disease-detector.git
+cd lung-disease-detector
+```
+
+### 1.2 Backend Setup
+1. **Create Virtual Environment:**
+   ```bash
+   cd backend
+   python -m venv venv
+   venv\Scripts\activate  # On Windows (or source venv/bin/activate on Mac/Linux)
+   ```
+
+2. **Install Dependencies:**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+3. **Configure Environment Variables:**
+   - Copy `.env.example` to `.env` (or create a new `.env` file).
+   - Ensure `DATABASE_URL` and `REDIS_URL` are correct for your local setup.
+   - Example `.env`:
+     ```ini
+     DEBUG=True
+     SECRET_KEY=dev-secret-key
+     ALLOWED_HOSTS=localhost,127.0.0.1
+     CORS_ALLOWED_ORIGINS=http://localhost:5173
+     # Update these credentials if your local DB/Redis uses password
+     DATABASE_URL=postgresql://postgres:password@localhost:5432/lung_disease_db
+     REDIS_URL=redis://localhost:6379/1
+     CELERY_BROKER_URL=redis://localhost:6379/1
+     MODEL_PATH=ml_model/saved_models/model.h5
+     ```
+
+4. **Initialize Database:**
+   ```bash
+   # Make sure PostgreSQL and Redis are running!
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+### 1.3 Dataset & Model Setup (Crucial!)
+Since the dataset and trained model are large, they are **not** in the git repo. You must set them up manually.
+
+1. **Download Data:**
+   - Download [COVID-19 Radiography Database](https://www.kaggle.com/tawsifurrahman/covid19-radiography-database)
+   - Download [TB Chest X-ray Database](https://www.kaggle.com/tawsifurrahman/tuberculosis-tb-chest-xray-dataset)
+
+2. **Organize Folders:**
+   - Extract them so you have the raw images.
+   - Run the helper script to structure the folder for training:
+     ```bash
+     # You might need to edit this script to point to your download location first!
+     python prepare_data.py
+     ```
+   - OR manually ensure folders are in `backend/dataset/combined/`:
+     - `COVID-19/`
+     - `Tuberculosis/`
+     - `Bacterial Pneumonia/`
+     - `Viral Pneumonia/`
+     - `Normal/`
+
+3. **Train the Model:**
+   ```bash
+   python -m ml_model.train
+   ```
+   *This will train the AI and save `model.h5` to `backend/ml_model/saved_models/`.*
+
+### 1.4 Frontend Setup
+Open a new terminal:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 1.5 Run the App
+1. **Backend:** `python manage.py runserver`
+2. **Celery:** `celery -A backend worker -l info -P eventlet` (Windows)
+3. **Frontend:** `npm run dev`
 
 - COVID-19 Radiography Database  
   Link: `https://www.kaggle.com/tawsifurrahman/covid19-radiography-database`

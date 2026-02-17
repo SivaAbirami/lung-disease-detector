@@ -22,6 +22,10 @@ ALLOWED_HOSTS: list[str] = config(
     "ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv()
 )
 
+# Trust Nginx proxy headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # -----------------------------------------------------------------------------
 # Applications
@@ -323,6 +327,21 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+if ENABLE_LOKI:
+    LOGGING["handlers"]["loki"] = {
+        "level": "INFO",
+        "class": "logging_loki.LokiHandler",
+        "url": LOKI_URL,
+        "tags": {"app": config("LOKI_APP_LABEL", default="backend")},
+        "version": "1",
+    }
+    # Add loki handler to relevant loggers
+    for logger_name in ["django", "api", "ml_model", "celery", "root"]:
+        if logger_name in LOGGING["loggers"]:
+            LOGGING["loggers"][logger_name]["handlers"].append("loki")
+        elif logger_name == "root":
+             LOGGING["root"]["handlers"].append("loki")
 
 
 # -----------------------------------------------------------------------------

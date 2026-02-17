@@ -5,21 +5,16 @@ from datetime import timedelta
 from time import perf_counter
 
 from celery import shared_task
-from celery.utils.log import get_task_logger
 from django.utils import timezone
 
 from .models import Prediction
 from .serializers import PredictionSerializer
-from .validators import validate_xray_image
-from .utils.hash_utils import generate_image_hash
-from ml_model.predict import predict_image
-from ml_model.recommendations import get_disease_recommendations
-from ml_model.biobert import analyze_symptoms
 
+from datetime import timedelta
+from time import perf_counter
 
-logger = logging.getLogger(__name__)
-task_logger = get_task_logger(__name__)
-
+from celery import shared_task
+from django.utils import timezone
 
 # IMPORTANT: This order MUST match the alphabetical directory order used by
 # ImageDataGenerator.flow_from_directory() during training on Kaggle.
@@ -39,9 +34,12 @@ def predict_image_task(self, prediction_id: int) -> int:
     Returns the ID of the updated Prediction instance.
     """
     try:
+        # Import heavy ML dependencies lazily inside the worker process.
+        from ml_model.predict import predict_image
+        from ml_model.biobert import analyze_symptoms
         prediction = Prediction.objects.get(id=prediction_id)
     except Prediction.DoesNotExist as exc:  # pragma: no cover - defensive
-        task_logger.error("Prediction object not found: %s", exc)
+        logger.error("Prediction object not found: %s", exc)
         raise
 
     image_path = prediction.image.path
@@ -71,11 +69,11 @@ def predict_image_task(self, prediction_id: int) -> int:
                  if advice:
                      # Prepend AI advice to immediate actions
                      recs["immediate_actions"].insert(0, f"[AI Suggestion]: {advice}")
-                     task_logger.info("AI advice added for prediction %s (%d chars)", prediction.id, len(advice))
+                     logger.info("AI advice added for prediction %s (%d chars)", prediction.id, len(advice))
                  else:
-                     task_logger.warning("AI analysis returned no advice for prediction %s", prediction.id)
+                     logger.warning("AI analysis returned no advice for prediction %s", prediction.id)
              except Exception as e:
-                 task_logger.error("AI symptom analysis failed: %s", e)
+                 logger.error("AI symptom analysis failed: %s", e)
 
         total_time_ms = (perf_counter() - start) * 1000.0
 
@@ -106,7 +104,7 @@ def predict_image_task(self, prediction_id: int) -> int:
             "cached_result",
         ])
 
-        task_logger.info(
+        logger.info(
             "Prediction %s completed: %s (%.2f%%) in %.2f ms",
             prediction.id,
             prediction.predicted_class,
@@ -119,7 +117,7 @@ def predict_image_task(self, prediction_id: int) -> int:
             countdown = 2 ** self.request.retries
         except Exception:
             countdown = 10
-        task_logger.error("Error during prediction task: %s", exc, exc_info=True)
+        logger.error("Error during prediction task: %s", exc, exc_info=True)
         raise self.retry(exc=exc, countdown=countdown)
 
 
@@ -148,7 +146,7 @@ def retrain_model_task(self) -> dict:
     Can be triggered manually from Django Admin or via API.
     Returns a dict with training results.
     """
-    task_logger.info("Retrain task started (task_id=%s)", self.request.id)
+    logger.info("Retrain task started (task_id=%s)", self.request.id)
 
     try:
         from ml_model.retrain import retrain_model
@@ -158,13 +156,13 @@ def retrain_model_task(self) -> dict:
             # Reload the model in the worker process
             from ml_model.predict import reload_model
             reload_model()
-            task_logger.info("Model reloaded after successful retraining.")
+            logger.info("Model reloaded after successful retraining.")
 
-        task_logger.info("Retrain task completed: %s", result)
+        logger.info("Retrain task completed: %s", result)
         return result
 
     except Exception as exc:
-        task_logger.error("Retrain task failed: %s", exc, exc_info=True)
+        logger.error("Retrain task failed: %s", exc, exc_info=True)
         return {"status": "error", "message": str(exc)}
 
 
@@ -175,7 +173,7 @@ def scheduled_retrain_task() -> dict:
     Should be added to CELERY_BEAT_SCHEDULE in settings.py.
     Only runs if there are enough corrected samples.
     """
-    task_logger.info("Scheduled monthly retraining triggered.")
+    logger.info("Scheduled monthly retraining triggered.")
 
     from api.models import Prediction
     corrected_count = Prediction.objects.filter(
@@ -185,7 +183,7 @@ def scheduled_retrain_task() -> dict:
 
     if corrected_count < 5:
         msg = f"Skipping scheduled retrain: only {corrected_count} corrected samples (need 5+)."
-        task_logger.info(msg)
+        logger.info(msg)
         return {"status": "skipped", "message": msg}
 
     # Delegate to the main retrain task

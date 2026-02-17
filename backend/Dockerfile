@@ -1,11 +1,11 @@
-FROM python:3.9
+FROM python:3.9-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install ALL required system dependencies (FIXED)
+# Install system dependencies (slim image needs more explicit packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
@@ -19,10 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     shared-mime-info \
     libpq-dev \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
-    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -36,5 +32,10 @@ COPY . .
 ENV DJANGO_SETTINGS_MODULE=backend.settings
 
 RUN python manage.py collectstatic --noinput || true
+
+# Entrypoint: run migrations then start the app
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["gunicorn", "backend.wsgi:application", "-b", "0.0.0.0:8000", "--workers", "3"]

@@ -2,10 +2,10 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
 
-def main(argv: List[str] | None = None) -> None:
+def main(argv: Optional[List[str]] = None) -> None:
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
     try:

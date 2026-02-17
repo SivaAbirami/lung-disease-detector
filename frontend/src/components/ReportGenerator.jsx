@@ -32,7 +32,7 @@ const ReportGenerator = ({ prediction }) => {
 
       <div
         id="prediction-report"
-        className="bg-white text-slate-900 rounded-lg shadow-md p-4 space-y-3"
+        className="bg-white text-slate-900 rounded-lg shadow-md p-4 space-y-3 absolute -left-[9999px] top-0 w-[210mm]"
       >
         <header className="flex items-center justify-between">
           <div>

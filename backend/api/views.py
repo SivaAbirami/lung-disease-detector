@@ -1,3 +1,5 @@
+
+
 from __future__ import annotations
 
 import logging
@@ -13,7 +15,6 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .models import Prediction
 from .serializers import PredictionSerializer, RegisterSerializer
-from .tasks import predict_image_task
 from .utils.hash_utils import generate_image_hash
 from .validators import validate_xray_image
 from ml_model.recommendations import get_disease_recommendations
@@ -29,6 +30,8 @@ class PredictView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
+        # Import here to avoid heavy ML imports during Django startup
+        from .tasks import predict_image_task
         file_obj = request.FILES.get("image")
         if not file_obj:
             return Response(

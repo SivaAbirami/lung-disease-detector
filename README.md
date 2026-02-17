@@ -14,7 +14,43 @@ AI-assisted lung disease screening (COVID-19, Tuberculosis, Bacterial/Viral Pneu
 - TailwindCSS
 - react-dropzone, axios, react-router, react-hot-toast
 
-- react-dropzone, axios, react-router, react-hot-toast
+---
+
+## Architecture Diagram
+
+```mermaid
+graph TD
+    User([User / Browser])
+    
+    subgraph "Frontend (Nginx / Docker)"
+        ReactApp[React SPA]
+    end
+
+    subgraph "Backend (Gunicorn / Docker)"
+        Django[Django REST Framework]
+        CeleryWorker[Celery Worker]
+        MLModel[TensorFlow Model]
+    end
+
+    subgraph "Data & Messaging"
+        Postgres[(PostgreSQL)]
+        Redis[[Redis Broker/Backend]]
+        Media[(Media Storage /media)]
+    end
+
+    User <-->|HTTP/HTTPS| ReactApp
+    ReactApp <-->|REST API| Django
+    
+    Django <-->|Record Metadata| Postgres
+    Django -->|Uploads| Media
+    Django -->|Enqueue Task| Redis
+    
+    Redis -->|Fetch Task| CeleryWorker
+    CeleryWorker -->|Load Image| Media
+    CeleryWorker <-->|Inference| MLModel
+    CeleryWorker -->|Update Results| Postgres
+    CeleryWorker -->|Store Result| Redis
+```
 
 ---
 

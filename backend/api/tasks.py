@@ -14,6 +14,7 @@ from .validators import validate_xray_image
 from .utils.hash_utils import generate_image_hash
 from ml_model.predict import predict_image
 from ml_model.recommendations import get_disease_recommendations
+from ml_model.biobert import analyze_symptoms
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +57,25 @@ def predict_image_task(self, prediction_id: int) -> int:
             class_names=CLASS_NAMES,
         )
         recs = get_disease_recommendations(predicted_class)
+
+        # Apply Ollama-powered symptom analysis if symptoms provided
+        if prediction.symptoms:
+             try:
+                 bio_recs = analyze_symptoms(
+                     predicted_class,
+                     prediction.symptoms,
+                     patient_age=prediction.patient_age,
+                     patient_sex=prediction.patient_sex,
+                 )
+                 advice = bio_recs.get("biobert_advice")
+                 if advice:
+                     # Prepend AI advice to immediate actions
+                     recs["immediate_actions"].insert(0, f"[AI Suggestion]: {advice}")
+                     task_logger.info("AI advice added for prediction %s (%d chars)", prediction.id, len(advice))
+                 else:
+                     task_logger.warning("AI analysis returned no advice for prediction %s", prediction.id)
+             except Exception as e:
+                 task_logger.error("AI symptom analysis failed: %s", e)
 
         total_time_ms = (perf_counter() - start) * 1000.0
 
@@ -116,3 +136,57 @@ def cleanup_old_predictions(days: int = 30) -> int:
     logger.info("Deleted %s old predictions (older than %s days)", count, days)
     return count
 
+
+# ---------------------------------------------------------------------------
+# Model Retraining Tasks
+# ---------------------------------------------------------------------------
+
+@shared_task(bind=True, max_retries=0)
+def retrain_model_task(self) -> dict:
+    """Celery task to retrain the model using corrected predictions.
+
+    Can be triggered manually from Django Admin or via API.
+    Returns a dict with training results.
+    """
+    task_logger.info("Retrain task started (task_id=%s)", self.request.id)
+
+    try:
+        from ml_model.retrain import retrain_model
+        result = retrain_model()
+
+        if result["status"] == "success":
+            # Reload the model in the worker process
+            from ml_model.predict import reload_model
+            reload_model()
+            task_logger.info("Model reloaded after successful retraining.")
+
+        task_logger.info("Retrain task completed: %s", result)
+        return result
+
+    except Exception as exc:
+        task_logger.error("Retrain task failed: %s", exc, exc_info=True)
+        return {"status": "error", "message": str(exc)}
+
+
+@shared_task
+def scheduled_retrain_task() -> dict:
+    """Periodic Celery task for monthly retraining.
+
+    Should be added to CELERY_BEAT_SCHEDULE in settings.py.
+    Only runs if there are enough corrected samples.
+    """
+    task_logger.info("Scheduled monthly retraining triggered.")
+
+    from api.models import Prediction
+    corrected_count = Prediction.objects.filter(
+        is_corrected=True,
+        true_class__isnull=False,
+    ).count()
+
+    if corrected_count < 5:
+        msg = f"Skipping scheduled retrain: only {corrected_count} corrected samples (need 5+)."
+        task_logger.info(msg)
+        return {"status": "skipped", "message": msg}
+
+    # Delegate to the main retrain task
+    return retrain_model_task.apply().result

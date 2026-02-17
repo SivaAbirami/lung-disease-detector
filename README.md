@@ -128,6 +128,8 @@ npm run dev
 2. **Celery:** `celery -A backend worker -l info -P eventlet` (Windows)
 3. **Frontend:** `npm run dev`
 
+> **Note:** By default, `CELERY_TASK_ALWAYS_EAGER=True` in settings, so tasks run synchronously for easier development. You don't strictly *need* the Celery worker running to test predictions locally. Set `CELERY_TASK_ALWAYS_EAGER=False` in `.env` to enable true async processing (requires Redis and Worker).
+
 - COVID-19 Radiography Database  
   Link: `https://www.kaggle.com/tawsifurrahman/covid19-radiography-database`
 

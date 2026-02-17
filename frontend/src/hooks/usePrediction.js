@@ -33,14 +33,14 @@ export const usePrediction = () => {
     maxAttempts: 40
   });
 
-  const submit = async () => {
+  const submit = async (extraData = {}) => {
     if (!file) {
       toast.error("Please select an image first.");
       return;
     }
     setIsSubmitting(true);
     try {
-      const { data } = await uploadImage(file);
+      const { data } = await uploadImage(file, extraData);
       if (data.cached && data.prediction) {
         setPrediction(data.prediction);
         navigate(`/result/${data.prediction.id}`, { state: { prediction: data.prediction } });

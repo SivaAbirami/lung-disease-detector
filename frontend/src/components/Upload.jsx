@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
-import { FiUploadCloud } from "react-icons/fi";
+import { FiUploadCloud, FiUser } from "react-icons/fi";
 import LoadingSpinner from "@components/common/LoadingSpinner";
 import { usePrediction } from "@hooks/usePrediction";
 import {
@@ -19,6 +19,12 @@ const Upload = () => {
   const { file, setFile, isSubmitting, isPolling, submit } = usePrediction();
   const [preview, setPreview] = useState(null);
   const [dimError, setDimError] = useState("");
+
+  // Patient details state
+  const [patientName, setPatientName] = useState("");
+  const [patientAge, setPatientAge] = useState("");
+  const [patientSex, setPatientSex] = useState("");
+  const [symptoms, setSymptoms] = useState("");
 
   const onDrop = useCallback(
     async (acceptedFiles) => {
@@ -70,7 +76,12 @@ const Upload = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await submit();
+    await submit({
+      patient_name: patientName,
+      patient_age: patientAge,
+      patient_sex: patientSex,
+      symptoms: symptoms
+    });
   };
 
   return (
@@ -86,12 +97,72 @@ const Upload = () => {
         </p>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Patient Details Section */}
+        <div className="bg-surface rounded-xl p-6 border border-slate-700 shadow-card space-y-4">
+          <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+            <FiUser className="text-primary-400" /> Patient Details (Optional)
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                placeholder="e.g. John Doe"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Age
+              </label>
+              <input
+                type="number"
+                value={patientAge}
+                onChange={(e) => setPatientAge(e.target.value)}
+                min="0"
+                max="150"
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                placeholder="e.g. 45"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Sex
+              </label>
+              <select
+                value={patientSex}
+                onChange={(e) => setPatientSex(e.target.value)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+              >
+                <option value="">Select...</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+            <div className="md:col-span-3">
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Symptoms (optional)
+              </label>
+              <textarea
+                value={symptoms}
+                onChange={(e) => setSymptoms(e.target.value)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none h-20 resize-none"
+                placeholder="Describe current symptoms (e.g. fever, cough, shortness of breath) for AI analysis..."
+              />
+            </div>
+          </div>
+        </div>
+
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-6 bg-surface shadow-card cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-            isDragActive ? "border-primary-500 bg-slate-900" : "border-slate-700"
-          }`}
+          className={`border-2 border-dashed rounded-xl p-6 bg-surface shadow-card cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDragActive ? "border-primary-500 bg-slate-900" : "border-slate-700"
+            }`}
         >
           <input {...getInputProps()} aria-label="Upload chest X-ray image" />
           <div className="flex flex-col items-center gap-3 text-center">

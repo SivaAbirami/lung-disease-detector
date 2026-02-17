@@ -60,6 +60,18 @@ def get_model() -> tf.keras.Model:
     return _model
 
 
+def reload_model() -> None:
+    """Force-reload the model from disk (e.g. after retraining).
+
+    Thread-safe: acquires the model lock before clearing the cached instance.
+    The next call to ``get_model()`` will load the updated weights.
+    """
+    global _model
+    with _model_lock:
+        _model = None
+    logger.info("Model cache cleared — next prediction will load fresh weights.")
+
+
 def preprocess_image(image_path: str) -> np.ndarray:
     """Load and preprocess an image file for prediction.
 

@@ -8,7 +8,12 @@ const navLinkClass = ({ isActive }) =>
     isActive ? "bg-slate-800 text-primary-50" : "text-slate-300 hover:bg-slate-800"
   ].join(" ");
 
+import { useAuth } from "../../context/AuthContext";
+import { FiLogOut } from "react-icons/fi";
+
 const Navbar = () => {
+  const { user, logout } = useAuth();
+
   return (
     <header className="bg-surface border-b border-slate-800">
       <nav
@@ -35,7 +40,41 @@ const Navbar = () => {
           <NavLink to="/history" className={navLinkClass}>
             History
           </NavLink>
+          <NavLink to="/dashboard" className={navLinkClass}>
+            Dashboard
+          </NavLink>
+
+          <div className="h-6 w-px bg-slate-700 mx-2" />
+
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-slate-400">Hello, {user.username}</span>
+              <button
+                onClick={logout}
+                className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors"
+                title="Logout"
+              >
+                <FiLogOut />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="text-slate-300 hover:text-white text-sm font-medium px-3 py-2"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
         </div>
+
       </nav>
     </header>
   );

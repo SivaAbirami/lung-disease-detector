@@ -51,6 +51,26 @@ const ReportGenerator = ({ prediction }) => {
           />
         </header>
 
+        {(prediction.patient_name || prediction.patient_age || prediction.patient_sex) && (
+          <section className="grid grid-cols-3 gap-3 text-[11px] p-2 bg-slate-50 rounded border border-slate-200">
+            {prediction.patient_name && (
+              <div>
+                <span className="font-semibold text-slate-800">Name:</span> {prediction.patient_name}
+              </div>
+            )}
+            {prediction.patient_age && (
+              <div>
+                <span className="font-semibold text-slate-800">Age:</span> {prediction.patient_age}
+              </div>
+            )}
+            {prediction.patient_sex && (
+              <div>
+                <span className="font-semibold text-slate-800">Sex:</span> {prediction.patient_sex}
+              </div>
+            )}
+          </section>
+        )}
+
         <section className="grid grid-cols-2 gap-3 text-[11px]">
           <div className="space-y-1">
             <h2 className="font-semibold text-slate-800 text-xs">

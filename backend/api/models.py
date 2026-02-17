@@ -103,6 +103,41 @@ class Prediction(models.Model):
         help_text="Whether this prediction was served from cache.",
     )
 
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="predictions",
+        help_text="User who uploaded this image.",
+    )
+
+    patient_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Patient's full name.",
+    )
+    patient_age = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(150)],
+        help_text="Patient's age in years.",
+    )
+    patient_sex = models.CharField(
+        max_length=1,
+        choices=[("M", "Male"), ("F", "Female"), ("O", "Other")],
+        null=True,
+        blank=True,
+        help_text="Patient's biological sex.",
+    )
+    
+    symptoms = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Patient reported symptoms for BioBERT analysis.",
+    )
+
     # --- Feedback / Active-learning fields ---
     true_class = models.CharField(
         max_length=64,

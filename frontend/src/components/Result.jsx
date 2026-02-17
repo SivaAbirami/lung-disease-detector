@@ -176,8 +176,8 @@ const Result = () => {
                         type="button"
                         onClick={() => setSelectedClass(cls)}
                         className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${selectedClass === cls
-                            ? "border-primary-500 bg-primary-500/20 text-primary-300"
-                            : "border-slate-600 text-slate-300 hover:bg-slate-700"
+                          ? "border-primary-500 bg-primary-500/20 text-primary-300"
+                          : "border-slate-600 text-slate-300 hover:bg-slate-700"
                           }`}
                       >
                         {cls}
@@ -253,6 +253,37 @@ const Result = () => {
               <p className="mt-2 text-slate-300">{prediction.follow_up}</p>
             </div>
           </div>
+
+          {/* ── AI Symptom Analysis Section ── */}
+          {prediction.symptoms && (
+            <div className="bg-gradient-to-br from-teal-900/40 to-cyan-900/30 rounded-lg border border-teal-500/40 p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-teal-200 flex items-center gap-2">
+                🧬 AI Symptom Analysis (AI-Powered)
+              </h3>
+              <p className="text-xs text-slate-300">
+                <span className="font-medium text-slate-200">Reported symptoms:</span>{" "}
+                {prediction.symptoms}
+              </p>
+              {prediction.immediate_actions?.filter(a => a.startsWith("[AI Suggestion]")).length > 0 && (
+                <div className="space-y-2 mt-2">
+                  <p className="text-xs font-medium text-teal-300">AI Medical Analysis:</p>
+                  <div className="bg-black/20 rounded-lg p-3 space-y-2">
+                    {prediction.immediate_actions
+                      .filter(a => a.startsWith("[AI Suggestion]"))
+                      .map((item) => item.replace("[AI Suggestion]: ", ""))
+                      .join("")
+                      .split("\n")
+                      .filter(p => p.trim())
+                      .map((paragraph, idx) => (
+                        <p key={idx} className="text-xs text-teal-100 leading-relaxed">
+                          {paragraph.trim()}
+                        </p>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="rounded-lg border border-yellow-500/60 bg-yellow-500/5 p-3 text-xs text-yellow-100">
             {prediction.disclaimer}

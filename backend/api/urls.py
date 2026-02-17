@@ -8,7 +8,16 @@ from .views import (
     TaskStatusView,
     RecommendationView,
     PredictionFeedbackView,
+    DashboardStatsView,
+    RegisterView,
+    CustomTokenObtainPairView,
+    RetrainModelView,
 )
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
 
 
 urlpatterns = [
@@ -25,4 +34,13 @@ urlpatterns = [
         PredictionFeedbackView.as_view(),
         name="prediction-feedback",
     ),
+    path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
+    
+    # Authentication
+    path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # Admin Ops
+    path("admin/retrain/", RetrainModelView.as_view(), name="retrain-model"),
 ]

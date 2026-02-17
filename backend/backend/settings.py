@@ -38,11 +38,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "django_filters",
+    "django_prometheus",
     # Local
     "api",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -52,6 +54,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -159,6 +162,7 @@ ALLOWED_IMAGE_EXTENSIONS: tuple[str, ...] = (".jpg", ".jpeg", ".png")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ],
@@ -172,6 +176,16 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 
@@ -205,13 +219,40 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60  # seconds
 CELERY_TASK_TIME_LIMIT = 120
 
 # Run tasks synchronously locally (No Redis required)
-CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=True, cast=bool)
+CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool)
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Celery Beat – periodic task schedule
+CELERY_BEAT_SCHEDULE = {
+    "monthly-model-retrain": {
+        "task": "api.tasks.scheduled_retrain_task",
+        "schedule": 30 * 24 * 60 * 60,  # every 30 days (in seconds)
+    },
+    "weekly-cleanup-old-predictions": {
+        "task": "api.tasks.cleanup_old_predictions",
+        "schedule": 7 * 24 * 60 * 60,  # every 7 days
+        "args": (30,),
+    },
+}
+
+
+# -----------------------------------------------------------------------------
+# Observability (LGTM Stack)
+# -----------------------------------------------------------------------------
+
+LOKI_URL = config("LOKI_URL", default="http://localhost:3100/loki/api/v1/push")
+ENABLE_LOKI = config("ENABLE_LOKI", default=False, cast=bool)
+OTEL_EXPORTER_OTLP_ENDPOINT = config(
+    "OTEL_EXPORTER_OTLP_ENDPOINT", default="http://localhost:4317"
+)
 
 
 # -----------------------------------------------------------------------------
 # Logging
 # -----------------------------------------------------------------------------
+
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -221,20 +262,64 @@ LOGGING = {
             "format": "[{levelname}] {asctime} {name} {message}",
             "style": "{",
         },
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "backend.log"),
+        "file_info": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGS_DIR / "app.log",
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "backupCount": 5,
             "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+        "file_error": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGS_DIR / "error.log",
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file_error"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["file_error", "console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "api": {
+            "handlers": ["console", "file_info", "file_error"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "ml_model": {
+            "handlers": ["console", "file_info", "file_error"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery": {
+            "handlers": ["console", "file_info", "file_error"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console", "file_info", "file_error"],
         "level": "INFO",
     },
 }
@@ -258,4 +343,14 @@ if SENTRY_DSN:
 # -----------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# -----------------------------------------------------------------------------
+# Ollama LLM (local AI for symptom analysis)
+# -----------------------------------------------------------------------------
+
+OLLAMA_BASE_URL = config("OLLAMA_BASE_URL", default="http://localhost:11434")
+USE_MEDLLAMA = config("USE_MEDLLAMA", default=False, cast=bool)
+OLLAMA_MODEL = "medllama2" if USE_MEDLLAMA else config("OLLAMA_MODEL", default="tinyllama")
+OLLAMA_TIMEOUT = config("OLLAMA_TIMEOUT", default=120, cast=int)
 

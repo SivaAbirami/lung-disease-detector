@@ -122,7 +122,8 @@ def get_disease_recommendations(disease_name: str) -> Dict[str, Any]:
         ],
         "follow_up": "Follow the schedule recommended by your clinician.",
     }
-    data = DISEASE_RECOMMENDATIONS.get(disease_name, default)
+    import copy
+    data = copy.deepcopy(DISEASE_RECOMMENDATIONS.get(disease_name, default))
     data["disclaimer"] = DISCLAIMER_TEXT
     return data
 

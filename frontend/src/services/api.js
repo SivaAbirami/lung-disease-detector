@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 const api = axios.create({
   baseURL: "/api",
   withCredentials: false,
-  timeout: 20000
+  timeout: 120000
 });
 
 api.interceptors.request.use(
@@ -27,9 +27,29 @@ api.interceptors.response.use(
   }
 );
 
-export const uploadImage = (file) => {
+// Add a request interceptor to include the JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export const uploadImage = (file, extraData = {}) => {
   const formData = new FormData();
   formData.append("image", file);
+  if (extraData) {
+    Object.entries(extraData).forEach(([key, value]) => {
+      // Only append if value is present
+      if (value !== undefined && value !== null && value !== "") {
+        formData.append(key, value);
+      }
+    });
+  }
   return api.post("/predict/", formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
@@ -46,5 +66,12 @@ export const getRecommendations = (diseaseName) =>
 
 export const submitFeedback = (predictionId, trueClass) =>
   api.post(`/predictions/${predictionId}/feedback/`, { true_class: trueClass });
+
+export const getDashboardStats = () =>
+  api.get("/dashboard/stats/").then((res) => res.data);
+
+export const retrainModel = () =>
+  api.post("/admin/retrain/").then((res) => res.data);
+
 
 export default api;

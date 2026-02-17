@@ -1,10 +1,11 @@
 FROM python:3.9
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install ALL required system dependencies
+# Install ALL required system dependencies (FIXED)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
@@ -21,14 +22,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libxrender1 \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
-# Upgrade pip first (IMPORTANT)
 RUN pip install --upgrade pip
 
-# Install Python dependencies
 RUN pip install --no-cache-dir --default-timeout=300 -r requirements.txt
 
 COPY . .

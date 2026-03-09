@@ -75,93 +75,165 @@ def prepare_combined_dataset() -> None:
 
 
 def build_generators(
+    dataframe: "pandas.DataFrame",
+    directory: str,
+    x_col: str,
+    y_cols: list[str],
     image_size: Tuple[int, int] = IMAGE_SIZE,
     batch_size: int = 32,
-) -> Tuple[tf.keras.preprocessing.image.DirectoryIterator, ...]:
-    """Create train, validation, and test generators with augmentation."""
-    prepare_combined_dataset()
+) -> Tuple[tf.keras.preprocessing.image.DataFrameIterator, ...]:
+    """Create train, validation, and test generators for multi-label classification from a DataFrame.
+    
+    Args:
+        dataframe: Pandas DataFrame containing the dataset metadata.
+        directory: The base path where the images are stored.
+        x_col: The column name containing the image filenames.
+        y_cols: A list of column names for the binary disease labels.
+    """
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+
+    # Split the DataFrame 70/15/15
+    # NOTE: In a real medical scenario, this split SHOULD be grouped by Patient ID
+    # to prevent data leakage.
+    train_df, temp_df = train_test_split(dataframe, test_size=0.30, random_state=42)
+    val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42)
 
     # Data augmentation for training
     train_datagen = ImageDataGenerator(
         rescale=1.0 / 255.0,
-        rotation_range=10,
+        rotation_range=15,
         width_shift_range=0.1,
         height_shift_range=0.1,
         zoom_range=0.1,
         horizontal_flip=True,
-        validation_split=0.30,  # 70% train / 30% temp
     )
 
     # For validation/test (no augmentation, only rescaling)
-    test_datagen = ImageDataGenerator(rescale=1.0 / 255.0, validation_split=0.30)
+    test_datagen = ImageDataGenerator(rescale=1.0 / 255.0)
 
-    train_generator = train_datagen.flow_from_directory(
-        COMBINED_DIR,
+    train_generator = train_datagen.flow_from_dataframe(
+        dataframe=train_df,
+        directory=directory,
+        x_col=x_col,
+        y_col=y_cols,
         target_size=image_size,
         batch_size=batch_size,
-        class_mode="categorical",
-        subset="training",
+        class_mode="raw", # Use 'raw' for multi-label binary arrays
+        shuffle=True,
     )
 
-    temp_generator = test_datagen.flow_from_directory(
-        COMBINED_DIR,
+    val_generator = test_datagen.flow_from_dataframe(
+        dataframe=val_df,
+        directory=directory,
+        x_col=x_col,
+        y_col=y_cols,
         target_size=image_size,
         batch_size=batch_size,
-        class_mode="categorical",
-        subset="validation",
+        class_mode="raw",
         shuffle=False,
     )
 
-    # Split temp into validation and test (50/50 => 15% val, 15% test)
-    n_temp = temp_generator.samples
-    indices = np.arange(n_temp)
-    np.random.shuffle(indices)
-    split = n_temp // 2
-    val_idx, test_idx = indices[:split], indices[split:]
-
-    def _make_subset(gen: tf.keras.preprocessing.image.DirectoryIterator, subset_idx: np.ndarray):
-        gen_subset = tf.keras.preprocessing.image.DirectoryIterator(
-            directory=gen.directory,
-            image_data_generator=gen.image_data_generator,
-            target_size=gen.target_size,
-            color_mode=gen.color_mode,
-            classes=None,  # Do not pass int array, let it scan or pass string list
-            class_mode=gen.class_mode,
-            batch_size=gen.batch_size,
-            shuffle=False,
-            subset=None,
-        )
-        gen_subset.filenames = [gen.filenames[i] for i in subset_idx]
-        gen_subset.samples = len(gen_subset.filenames)
-        gen_subset.classes = gen.classes[subset_idx]
-        gen_subset.class_indices = gen.class_indices
-        return gen_subset
-
-    val_generator = _make_subset(temp_generator, val_idx)
-    test_generator = _make_subset(temp_generator, test_idx)
+    test_generator = test_datagen.flow_from_dataframe(
+        dataframe=test_df,
+        directory=directory,
+        x_col=x_col,
+        y_col=y_cols,
+        target_size=image_size,
+        batch_size=batch_size,
+        class_mode="raw",
+        shuffle=False,
+    )
 
     return train_generator, val_generator, test_generator
 
 
 def compute_class_weights_from_generator(
-    generator: tf.keras.preprocessing.image.DirectoryIterator,
+    generator: tf.keras.preprocessing.image.DataFrameIterator,
 ) -> Dict[int, float]:
-    """Compute class weights to handle imbalance."""
-    y = generator.classes
-    class_labels = np.unique(y)
-    weights = compute_class_weight(class_weight="balanced", classes=class_labels, y=y)
-    return {int(cls): float(w) for cls, w in zip(class_labels, weights)}
+    """Compute class weights to handle imbalance for multi-label data.
+    
+    Since each row can have multiple labels, we compute weights per binary class.
+    """
+    import numpy as np
+    y = generator.labels
+    weights = {}
+    num_samples = len(y)
+    num_classes = y.shape[1]
+    
+    for i in range(num_classes):
+        positives = np.sum(y[:, i])
+        negatives = num_samples - positives
+        # Simple heuristic: heavily weight the minority (often the positive case)
+        if positives == 0:
+             weights[i] = 1.0 # prevent division by zero
+        else:
+            weights[i] = num_samples / (2.0 * positives)
+            
+    return weights
 
 
 def main() -> None:
+    import pandas as pd
+    import os
+    
     batch_size = 32
-    train_gen, val_gen, test_gen = build_generators(batch_size=batch_size)
+    
+    # -------------------------------------------------------------
+    # KAGGLE MERGE LOGIC PLACEHOLDER
+    # -------------------------------------------------------------
+    # In a real Kaggle notebook, you would load all your CSVs, 
+    # harmonize them, and create `master_df` here.
+    # For now, we will create a dummy dataframe if run locally 
+    # just to ensure the pipeline doesn't crash during debugging.
+    
+    print("WARNING: Building a dummy dataframe for local testing.")
+    print("On Kaggle, you must replace this with your actual merged DataFrame.")
+    
+    # Let's assume you have an 'images' folder for testing
+    dummy_images_dir = str(COMBINED_DIR)
+    
+    # Let's pretend we have 3 diseases
+    y_cols = ["COVID-19", "Pneumonia", "Normal"]
+    
+    # Simulate some image files if none exist for pipeline testing
+    dummy_data = []
+    if os.path.exists(dummy_images_dir):
+        # Just grab random files from the old directory structure for testing flow
+        for root, dirs, files in os.walk(dummy_images_dir):
+            for file in files:
+                if file.endswith((".png", ".jpg", ".jpeg")):
+                    dummy_data.append({
+                        "filename": os.path.relpath(os.path.join(root, file), dummy_images_dir),
+                        "COVID-19": np.random.choice([0, 1]),
+                        "Pneumonia": np.random.choice([0, 1]),
+                        "Normal": np.random.choice([0, 1])
+                    })
+    
+    if not dummy_data:
+        # Create a completely fake entry so pandas doesn't crash if dir is empty
+        dummy_data = [{"filename": "fake_image.jpg", "COVID-19": 0, "Pneumonia": 0, "Normal": 1}]
+        
+    master_df = pd.DataFrame(dummy_data)
+    
+    # -------------------------------------------------------------
 
-    num_classes = len(train_gen.class_indices)
-    print(f"Detected classes: {train_gen.class_indices}")
+    train_gen, val_gen, test_gen = build_generators(
+        dataframe=master_df,
+        directory=dummy_images_dir,
+        x_col="filename",
+        y_cols=y_cols,
+        batch_size=batch_size
+    )
 
+    num_classes = len(y_cols)
+    print(f"Detected classes: {y_cols}")
+
+    # For multi-label, Keras handles class weights differently, 
+    # you often have to pass them as a dictionary if using `class_weight` arg
+    # but since we're using Binary Crossentropy, computing them per output node
     class_weights = compute_class_weights_from_generator(train_gen)
-    # Save class weights for reference at inference time if needed
+    
     with open(SAVED_MODELS_DIR / "class_weights.json", "w", encoding="utf-8") as f:
         json.dump(class_weights, f)
 
@@ -171,7 +243,7 @@ def main() -> None:
     callbacks = [
         ModelCheckpoint(
             filepath=str(SAVED_MODELS_DIR / "model.h5"),
-            monitor="val_accuracy",
+            monitor="val_auc", # Watch AUC instead of accuracy for multi-label
             save_best_only=True,
             save_weights_only=False,
             mode="max",
@@ -202,7 +274,7 @@ def main() -> None:
     )
 
     # Phase 2: fine-tune some of the base_model layers
-    base_model = model.get_layer("mobilenetv2_1.00_224")
+    base_model = model.get_layer("densenet121")
     base_model.trainable = True
     fine_tune_at = len(base_model.layers) // 2
     for layer in base_model.layers[:fine_tune_at]:
@@ -220,11 +292,8 @@ def main() -> None:
 
     # Evaluate on test set
     print("Evaluating on test set...")
-    test_loss, test_acc, test_prec, test_rec = model.evaluate(test_gen)
-    print(
-        f"Test accuracy: {test_acc * 100:.2f}% | "
-        f"Precision: {test_prec:.3f} | Recall: {test_rec:.3f}"
-    )
+    test_metrics = model.evaluate(test_gen)
+    print(f"Test Metrics: {dict(zip(model.metrics_names, test_metrics))}")
 
 
 if __name__ == "__main__":

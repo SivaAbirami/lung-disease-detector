@@ -71,10 +71,22 @@ const History = () => {
             }}
           >
             <option value="">All diseases</option>
+            <option value="Atelectasis">Atelectasis</option>
+            <option value="Cardiomegaly">Cardiomegaly</option>
+            <option value="Consolidation">Consolidation</option>
+            <option value="Edema">Edema</option>
+            <option value="Effusion">Effusion</option>
+            <option value="Emphysema">Emphysema</option>
+            <option value="Fibrosis">Fibrosis</option>
+            <option value="Hernia">Hernia</option>
+            <option value="Infiltration">Infiltration</option>
+            <option value="Mass">Mass</option>
+            <option value="Nodule">Nodule</option>
+            <option value="Pleural_Thickening">Pleural_Thickening</option>
+            <option value="Pneumonia">Pneumonia</option>
+            <option value="Pneumothorax">Pneumothorax</option>
             <option value="COVID-19">COVID-19</option>
             <option value="Tuberculosis">Tuberculosis</option>
-            <option value="Bacterial Pneumonia">Bacterial Pneumonia</option>
-            <option value="Viral Pneumonia">Viral Pneumonia</option>
             <option value="Normal">Normal</option>
           </select>
         </div>

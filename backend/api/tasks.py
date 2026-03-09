@@ -9,21 +9,17 @@ from django.utils import timezone
 
 from .models import Prediction
 from .serializers import PredictionSerializer
+from .validators import validate_xray_image
+from ml_model.recommendations import get_disease_recommendations
 
-from datetime import timedelta
-from time import perf_counter
-
-from celery import shared_task
-from django.utils import timezone
+logger = logging.getLogger(__name__)
 
 # IMPORTANT: This order MUST match the alphabetical directory order used by
 # ImageDataGenerator.flow_from_directory() during training on Kaggle.
 CLASS_NAMES = [
-    "Bacterial Pneumonia",
-    "COVID-19",
-    "Normal",
-    "Tuberculosis",
-    "Viral Pneumonia",
+    "Atelectasis", "Cardiomegaly", "Consolidation", "Edema", "Effusion",
+    "Emphysema", "Fibrosis", "Hernia", "Infiltration", "Mass", "Nodule",
+    "Pleural_Thickening", "Pneumonia", "Pneumothorax", "COVID-19", "Tuberculosis", "Normal"
 ]
 
 

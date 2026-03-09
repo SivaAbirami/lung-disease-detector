@@ -8,10 +8,22 @@ import { formatDate, formatConfidence } from "@utils/formatters";
 import { submitFeedback } from "@services/api";
 
 const DISEASE_CLASSES = [
+  "Atelectasis",
+  "Cardiomegaly",
+  "Consolidation",
+  "Edema",
+  "Effusion",
+  "Emphysema",
+  "Fibrosis",
+  "Hernia",
+  "Infiltration",
+  "Mass",
+  "Nodule",
+  "Pleural_Thickening",
+  "Pneumonia",
+  "Pneumothorax",
   "COVID-19",
   "Tuberculosis",
-  "Bacterial Pneumonia",
-  "Viral Pneumonia",
   "Normal",
 ];
 

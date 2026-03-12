@@ -19,6 +19,7 @@ def analyze_symptoms(
     symptoms: str,
     patient_age: int | None = None,
     patient_sex: str | None = None,
+    language: str = "English",
 ) -> dict:
     """
     Generate detailed medical advice using Ollama LLM.
@@ -40,6 +41,7 @@ def analyze_symptoms(
             symptoms=symptoms,
             patient_age=patient_age,
             patient_sex=patient_sex,
+            language=language,
         )
 
         if advice:

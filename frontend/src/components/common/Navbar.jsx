@@ -40,7 +40,7 @@ const Navbar = () => {
           <NavLink to="/history" className={navLinkClass}>
             History
           </NavLink>
-          {user?.is_superuser && (
+          {(user?.is_superuser || user?.role === 'DOCTOR') && (
             <NavLink to="/dashboard" className={navLinkClass}>
               Dashboard
             </NavLink>

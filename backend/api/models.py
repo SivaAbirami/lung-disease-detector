@@ -20,6 +20,29 @@ def prediction_image_upload_path(instance: "Prediction", filename: str) -> str:
     return f"xray_images/{uuid.uuid4().hex}{ext}"
 
 
+class UserProfile(models.Model):
+    """Stores extended user information like role."""
+    
+    class Role(models.TextChoices):
+        DOCTOR = "DOCTOR", "Doctor"
+        PATIENT = "PATIENT", "Patient"
+        
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.PATIENT,
+        help_text="The RBAC role of the user."
+    )
+    
+    def __str__(self):
+        return f"{self.user.username} Profile ({self.role})"
+
+
 class Prediction(models.Model):
     """Stores a single prediction result for an uploaded chest X-ray."""
 

@@ -17,7 +17,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["is_superuser"] = user.is_superuser
         token["is_staff"] = user.is_staff
         
-        # Add groups/roles
+        # Add RBAC Role
+        try:
+            token["role"] = user.profile.role
+        except Exception:
+            token["role"] = "PATIENT"
+        
+        # Add groups
         token["roles"] = list(user.groups.values_list("name", flat=True))
 
         return token

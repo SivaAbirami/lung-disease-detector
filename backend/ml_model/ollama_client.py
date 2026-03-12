@@ -64,6 +64,7 @@ def generate_medical_advice(
     symptoms: str,
     patient_age: Optional[int] = None,
     patient_sex: Optional[str] = None,
+    language: str = "English",
 ) -> Optional[str]:
     """
     Call the local Ollama API to generate detailed medical advice.
@@ -85,7 +86,8 @@ def generate_medical_advice(
         f"Diagnosis: {disease}\n"
         f"Patient Info: {patient_info or 'None'}\n"
         f"Symptoms: {symptoms}\n\n"
-        f"Please provide a medical analysis based on the above."
+        f"Please provide a medical analysis based on the above.\n"
+        f"CRITICAL INSTRUCTION: You MUST write your ENTIRE response in {language}."
     )
 
     payload = {

@@ -88,16 +88,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField(required=False, allow_blank=True, default="")
+    role = serializers.CharField(write_only=True, required=False, default="PATIENT")
 
     class Meta:
         model = User
-        fields = ("username", "password", "email")
+        fields = ("username", "password", "email", "role")
 
     def create(self, validated_data):
+        role_data = validated_data.pop("role", "PATIENT")
+        
         user = User.objects.create_user(
             username=validated_data["username"],
             password=validated_data["password"],
             email=validated_data.get("email", ""),
         )
+        
+        # Create the profile and attach the role
+        from .models import UserProfile
+        UserProfile.objects.create(user=user, role=role_data)
+        
         return user
 

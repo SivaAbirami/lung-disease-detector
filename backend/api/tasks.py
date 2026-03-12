@@ -24,7 +24,7 @@ CLASS_NAMES = [
 
 
 @shared_task(bind=True, max_retries=3, autoretry_for=(Exception,), retry_backoff=True)
-def predict_image_task(self, prediction_id: int) -> int:
+def predict_image_task(self, prediction_id: int, language: str = "English") -> int:
     """Celery task to run ML prediction on a stored image.
 
     Returns the ID of the updated Prediction instance.
@@ -60,6 +60,7 @@ def predict_image_task(self, prediction_id: int) -> int:
                      prediction.symptoms,
                      patient_age=prediction.patient_age,
                      patient_sex=prediction.patient_sex,
+                     language=language,
                  )
                  advice = bio_recs.get("biobert_advice")
                  if advice:

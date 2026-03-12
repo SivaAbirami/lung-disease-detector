@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
 import { FiUploadCloud, FiUser } from "react-icons/fi";
 import LoadingSpinner from "@components/common/LoadingSpinner";
+import { useAuth } from "../context/AuthContext";
 import { usePrediction } from "@hooks/usePrediction";
 import {
   ACCEPTED_TYPES,
@@ -17,6 +18,7 @@ const MIN_DIM = 224;
 
 const Upload = () => {
   const { file, setFile, isSubmitting, isPolling, submit } = usePrediction();
+  const { user } = useAuth();
   const [preview, setPreview] = useState(null);
   const [dimError, setDimError] = useState("");
 
@@ -24,6 +26,7 @@ const Upload = () => {
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [patientSex, setPatientSex] = useState("");
+  const [language, setLanguage] = useState("English");
   const [symptoms, setSymptoms] = useState("");
 
   const onDrop = useCallback(
@@ -77,10 +80,11 @@ const Upload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await submit({
-      patient_name: patientName,
-      patient_age: patientAge,
+      patient_name: user?.is_superuser ? patientName : user?.username || "",
+      patient_age: user?.is_superuser ? patientAge : "",
       patient_sex: patientSex,
-      symptoms: symptoms
+      symptoms: symptoms,
+      language: language
     });
   };
 
@@ -101,35 +105,41 @@ const Upload = () => {
         {/* Patient Details Section */}
         <div className="bg-surface rounded-xl p-6 border border-slate-700 shadow-card space-y-4">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <FiUser className="text-primary-400" /> Patient Details (Optional)
+            <FiUser className="text-primary-400" /> Patient Details & NLP Options (Optional)
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-                placeholder="e.g. John Doe"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Age
-              </label>
-              <input
-                type="number"
-                value={patientAge}
-                onChange={(e) => setPatientAge(e.target.value)}
-                min="0"
-                max="150"
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-                placeholder="e.g. 45"
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            {/* Admins (Doctors) see the Name and Age fields */}
+            {(user?.is_superuser || user?.role === 'DOCTOR') && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                    placeholder="e.g. John Doe"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Age
+                  </label>
+                  <input
+                    type="number"
+                    value={patientAge}
+                    onChange={(e) => setPatientAge(e.target.value)}
+                    min="0"
+                    max="150"
+                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                    placeholder="e.g. 45"
+                  />
+                </div>
+              </>
+            )}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 Sex
@@ -145,7 +155,26 @@ const Upload = () => {
                 <option value="O">Other</option>
               </select>
             </div>
-            <div className="md:col-span-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                AI Output Language
+              </label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+              >
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Mandarin">Mandarin</option>
+                <option value="Arabic">Arabic</option>
+                <option value="German">German</option>
+                <option value="Tamil">Tamil</option>
+              </select>
+            </div>
+            <div className="md:col-span-4">
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 Symptoms (optional)
               </label>

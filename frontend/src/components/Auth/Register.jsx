@@ -7,6 +7,7 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [role, setRole] = useState("PATIENT");
     const [error, setError] = useState("");
     const { register } = useAuth();
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-        const result = await register(username, email, password);
+        const result = await register(username, email, password, role);
         if (result.success) {
             navigate("/login");
         } else {
@@ -83,6 +84,18 @@ const Register = () => {
                                 required
                             />
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Account Type</label>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            className="block w-full px-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        >
+                            <option value="PATIENT">Patient</option>
+                            <option value="DOCTOR">Doctor</option>
+                        </select>
                     </div>
 
                     <button

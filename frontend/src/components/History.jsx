@@ -5,10 +5,13 @@ import LoadingSpinner from "@components/common/LoadingSpinner";
 import UrgencyBadge from "@components/common/UrgencyBadge";
 import { getPredictionHistory } from "@services/api";
 import { formatDate, truncateText } from "@utils/formatters";
+import PatientProgressChart from "./PatientProgressChart";
+import { useAuth } from "../../context/AuthContext";
 
 const PER_PAGE = 10;
 
 const History = () => {
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
@@ -91,6 +94,11 @@ const History = () => {
           </select>
         </div>
       </header>
+
+      {/* Render the chart here */}
+      {!loading && items.length > 0 && (
+        <PatientProgressChart history={items} diseaseFilter={diseaseFilter} search={search} user={user} />
+      )}
 
       <div className="bg-surface rounded-xl border border-slate-800 p-4">
         {loading ? (

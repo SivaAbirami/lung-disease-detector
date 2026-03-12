@@ -71,6 +71,8 @@ class PredictView(APIView):
                 patient_age = int(patient_age) if patient_age else None
             except (ValueError, TypeError):
                 patient_age = None
+            
+            language = request.data.get("language", "English") or "English"
 
             if cached:
                 # If symptoms provided, run BioBERT analysis inline on the cached result
@@ -82,7 +84,7 @@ class PredictView(APIView):
                     cached.patient_sex = patient_sex or cached.patient_sex
 
                     try:
-                        bio_recs = analyze_symptoms(cached.predicted_class, symptoms)
+                        bio_recs = analyze_symptoms(cached.predicted_class, symptoms, language=language)
                         advice = bio_recs.get("biobert_advice")
                         if advice:
                             # Prepend AI advice to existing recommendations
@@ -143,8 +145,8 @@ class PredictView(APIView):
                 cached_result=False,
             )
 
-            task = predict_image_task.delay(prediction.id)
-            logger.info("Enqueued prediction task %s for prediction %s", task.id, prediction.id)
+            task = predict_image_task.delay(prediction.id, language=language)
+            logger.info("Enqueued prediction task %s for prediction %s, language %s", task.id, prediction.id, language)
 
             return Response(
                 {

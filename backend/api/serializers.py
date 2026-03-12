@@ -87,6 +87,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
 
     password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
 
     class Meta:
         model = User

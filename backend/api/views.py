@@ -52,7 +52,13 @@ class PredictView(APIView):
         try:
             # Hash-based caching
             image_hash = generate_image_hash(file_obj)
-            cached = Prediction.objects.filter(image_hash=image_hash).first()
+            
+            from django.conf import settings
+            should_cache = getattr(settings, "ENABLE_IMAGE_CACHING", True)
+            
+            cached = None
+            if should_cache:
+                cached = Prediction.objects.filter(image_hash=image_hash).first()
 
             # Extract patient details & symptoms from request (needed for both cached and new)
             symptoms = request.data.get("symptoms", "") or ""

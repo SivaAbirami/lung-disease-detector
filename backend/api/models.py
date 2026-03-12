@@ -24,23 +24,14 @@ class Prediction(models.Model):
     """Stores a single prediction result for an uploaded chest X-ray."""
 
     class DiseaseClass(models.TextChoices):
-        ATELECTASIS = "Atelectasis", "Atelectasis"
-        CARDIOMEGALY = "Cardiomegaly", "Cardiomegaly"
-        CONSOLIDATION = "Consolidation", "Consolidation"
+        NORMAL = "Normal", "Normal"
         EDEMA = "Edema", "Edema"
-        EFFUSION = "Effusion", "Effusion"
-        EMPHYSEMA = "Emphysema", "Emphysema"
-        FIBROSIS = "Fibrosis", "Fibrosis"
-        HERNIA = "Hernia", "Hernia"
-        INFILTRATION = "Infiltration", "Infiltration"
-        MASS = "Mass", "Mass"
-        NODULE = "Nodule", "Nodule"
-        PLEURAL_THICKENING = "Pleural_Thickening", "Pleural_Thickening"
-        PNEUMONIA = "Pneumonia", "Pneumonia"
         PNEUMOTHORAX = "Pneumothorax", "Pneumothorax"
+        PNEUMONIA_BACTERIAL = "Pneumonia-Bacterial", "Pneumonia-Bacterial"
+        PNEUMONIA_VIRAL = "Pneumonia-Viral", "Pneumonia-Viral"
         COVID19 = "COVID-19", "COVID-19"
         TUBERCULOSIS = "Tuberculosis", "Tuberculosis"
-        NORMAL = "Normal", "Normal"
+        EMPHYSEMA = "Emphysema", "Emphysema"
         UNKNOWN = "Unknown", "Unknown"
 
     class UrgencyLevel(models.TextChoices):
@@ -55,7 +46,7 @@ class Prediction(models.Model):
     )
     image_hash = models.CharField(
         max_length=64,
-        unique=True,
+        unique=False,
         db_index=True,
         help_text="SHA-256 hash of the image bytes for cache lookups.",
     )

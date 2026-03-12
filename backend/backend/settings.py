@@ -372,4 +372,10 @@ OLLAMA_BASE_URL = config("OLLAMA_BASE_URL", default="http://localhost:11434")
 USE_MEDLLAMA = config("USE_MEDLLAMA", default=False, cast=bool)
 OLLAMA_MODEL = "medllama2" if USE_MEDLLAMA else config("OLLAMA_MODEL", default="tinyllama")
 OLLAMA_TIMEOUT = config("OLLAMA_TIMEOUT", default=120, cast=int)
+# -----------------------------------------------------------------------------
+# Prediction Caching
+# -----------------------------------------------------------------------------
+# If False, every image upload will trigger a new prediction even if it was 
+# previously processed. Useful for model testing.
+ENABLE_IMAGE_CACHING = config("ENABLE_IMAGE_CACHING", default=False, cast=bool)
 

@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 # IMPORTANT: This order MUST match the alphabetical directory order used by
 # ImageDataGenerator.flow_from_directory() during training on Kaggle.
 CLASS_NAMES = [
-    "Atelectasis", "Cardiomegaly", "Consolidation", "Edema", "Effusion",
-    "Emphysema", "Fibrosis", "Hernia", "Infiltration", "Mass", "Nodule",
-    "Pleural_Thickening", "Pneumonia", "Pneumothorax", "COVID-19", "Tuberculosis", "Normal"
+    "Normal", "Edema", "Pneumothorax",
+    "Pneumonia-Bacterial", "Pneumonia-Viral", "COVID-19",
+    "Tuberculosis", "Emphysema"
 ]
 
 

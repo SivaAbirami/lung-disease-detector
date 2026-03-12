@@ -40,9 +40,11 @@ const Navbar = () => {
           <NavLink to="/history" className={navLinkClass}>
             History
           </NavLink>
-          <NavLink to="/dashboard" className={navLinkClass}>
-            Dashboard
-          </NavLink>
+          {user?.is_superuser && (
+            <NavLink to="/dashboard" className={navLinkClass}>
+              Dashboard
+            </NavLink>
+          )}
 
           <div className="h-6 w-px bg-slate-700 mx-2" />
 

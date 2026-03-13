@@ -46,9 +46,9 @@ pip install -r requirements.txt
 ```
 
 **Configure Environment Variables:**
-Create a `.env` file in the `backend/` directory. You can choose between a **Default (Simple)** setup or a **Production-Ready** setup.
+Create a `.env` file in the `backend/` directory.
 
-#### Option A: Default Setup (Easiest)
+#### Default Setup (Easiest)
 Uses local SQLite and synchronous processing (No Redis/Postgres needed).
 ```env
 create .env file and copy paste from the .env.example file

@@ -100,12 +100,20 @@ def _parse_database_url(url: str) -> dict:
 
 
 DATABASE_URL = config(
-    "DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/lung_db"
+    "DATABASE_URL", default=""
 )
 
-DATABASES = {
-    "default": _parse_database_url(DATABASE_URL),
-}
+if DATABASE_URL:
+    DATABASES = {
+        "default": _parse_database_url(DATABASE_URL),
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -222,8 +230,9 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60  # seconds
 CELERY_TASK_TIME_LIMIT = 120
 
-# Run tasks synchronously locally (No Redis required)
-CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool)
+# Run tasks synchronously locally if worker is disabled
+USE_WORKER = config("USE_WORKER", default=False, cast=bool)
+CELERY_TASK_ALWAYS_EAGER = not USE_WORKER
 CELERY_TASK_EAGER_PROPAGATES = True
 
 # Celery Beat – periodic task schedule

@@ -22,12 +22,12 @@ Before you begin, ensure you have the following installed on your machine:
 ### 1. Clone the Repository
 Open your terminal or command prompt and run:
 ```bash
-git clone <your-repository-url>
-cd clg_project
+git clone https://github.com/SivaAbirami/lung-disease-detector.git
+cd lung-disease-detector
 ```
 
-### 2. Backend Setup (Django & AI Model)
-Open a terminal window and navigate to the backend folder:
+### 2. Backend Setup & Environment
+Navigate to the backend folder:
 ```bash
 cd backend
 ```
@@ -43,51 +43,67 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-**Install the required Python packages:**
+**Install requirements:**
 ```bash
 pip install -r requirements.txt
 ```
 
-**Run Database Migrations:**
+**Configure Environment Variables:**
+Create a `.env` file in the `backend/` directory. You can choose between a **Default (Simple)** setup or a **Production-Ready** setup.
+
+#### Option A: Default Setup (Easiest)
+Uses local SQLite and synchronous processing (No Redis/Postgres needed).
+```env
+DATABASE_URL=
+USE_WORKER=False
+ALLOWED_HOSTS=*
+DEBUG=True
+SECRET_KEY=your-secret-key
+```
+
+#### Option B: Production-Ready Setup
+Uses PostgreSQL and Celery with Redis for background processing.
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+USE_WORKER=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DEBUG=False
+SECRET_KEY=your-secret-key
+```
+
+**Run Migrations & Create Admin:**
 ```bash
-python manage.py makemigrations
 python manage.py migrate
-```
-
-**Create an Admin Account (Superuser):**
-This account will allow you to access the Admin Dashboard.
-```bash
 python manage.py createsuperuser
-# Follow the prompts to set a username, email, and password.
 ```
 
-### 3. Start the Backend Servers
-You will need **three separate terminal windows** to run the complete backend.
+### 3. Start the Backend
+Depending on your `.env` configuration:
 
-**Terminal 1: Start Redis**
-If you installed Memurai on Windows, it typically runs in the background automatically as a service. If using standard Redis, start the server:
+#### If using Default Setup (Option A):
+You only need one terminal for the backend:
 ```bash
-redis-server
-```
-
-**Terminal 2: Start Django API**
-*(Make sure your `venv` is activated)*
-```bash
-cd backend
 python manage.py runserver
 ```
 
-**Terminal 3: Start Celery Worker**
-*(Make sure your `venv` is activated)*
-```bash
-cd backend
+#### If using Production-Ready Setup (Option B):
+You need three separate terminal windows:
 
-# On Windows:
-celery -A backend worker -l INFO --pool=solo
-
-# On Mac/Linux:
-celery -A backend worker -l INFO
-```
+1. **Terminal 1: Redis Server**
+   ```bash
+   redis-server
+   ```
+2. **Terminal 2: Django API**
+   ```bash
+   python manage.py runserver
+   ```
+3. **Terminal 3: Celery Worker**
+   ```bash
+   # Windows:
+   celery -A backend worker -l INFO --pool=solo
+   # Mac/Linux:
+   celery -A backend worker -l INFO
+   ```
 
 ### 4. Frontend Setup (React/Vite)
 Open a **fourth terminal window** and navigate to the frontend folder:

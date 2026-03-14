@@ -38,10 +38,7 @@ cd backend
 python -m venv venv
 .\venv\Scripts\activate
 
-# On Mac/Linux:
-python3 -m venv venv
-source venv/bin/activate
-```
+
 
 **Install requirements:**
 ```bash
@@ -49,27 +46,14 @@ pip install -r requirements.txt
 ```
 
 **Configure Environment Variables:**
-Create a `.env` file in the `backend/` directory. You can choose between a **Default (Simple)** setup or a **Production-Ready** setup.
+Create a `.env` file in the `backend/` directory.
 
-#### Option A: Default Setup (Easiest)
+#### Default Setup (Easiest)
 Uses local SQLite and synchronous processing (No Redis/Postgres needed).
 ```env
-DATABASE_URL=
-USE_WORKER=False
-ALLOWED_HOSTS=*
-DEBUG=True
-SECRET_KEY=your-secret-key
+create .env file and copy paste from the .env.example file
 ```
 
-#### Option B: Production-Ready Setup
-Uses PostgreSQL and Celery with Redis for background processing.
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-USE_WORKER=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-DEBUG=False
-SECRET_KEY=your-secret-key
-```
 
 **Run Migrations & Create Admin:**
 ```bash
@@ -78,35 +62,14 @@ python manage.py createsuperuser
 ```
 
 ### 3. Start the Backend
-Depending on your `.env` configuration:
 
-#### If using Default Setup (Option A):
 You only need one terminal for the backend:
 ```bash
 python manage.py runserver
 ```
 
-#### If using Production-Ready Setup (Option B):
-You need three separate terminal windows:
-
-1. **Terminal 1: Redis Server**
-   ```bash
-   redis-server
-   ```
-2. **Terminal 2: Django API**
-   ```bash
-   python manage.py runserver
-   ```
-3. **Terminal 3: Celery Worker**
-   ```bash
-   # Windows:
-   celery -A backend worker -l INFO --pool=solo
-   # Mac/Linux:
-   celery -A backend worker -l INFO
-   ```
-
 ### 4. Frontend Setup (React/Vite)
-Open a **fourth terminal window** and navigate to the frontend folder:
+Open a **new terminal window** and navigate to the frontend folder:
 ```bash
 cd frontend
 ```

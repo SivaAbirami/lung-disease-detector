@@ -12,6 +12,7 @@ class PredictionSerializer(serializers.ModelSerializer):
     """Serializer exposing all prediction fields plus convenience helpers."""
 
     image_url = serializers.SerializerMethodField()
+    heatmap_image_url = serializers.SerializerMethodField()
     confidence_percentage = serializers.SerializerMethodField()
 
     class Meta:
@@ -42,6 +43,8 @@ class PredictionSerializer(serializers.ModelSerializer):
             "true_class",
             "is_corrected",
             "corrected_at",
+            "heatmap_image",
+            "heatmap_image_url",
         ]
         read_only_fields = [
             "id",
@@ -53,6 +56,8 @@ class PredictionSerializer(serializers.ModelSerializer):
             "true_class",
             "is_corrected",
             "corrected_at",
+            "heatmap_image",
+            "heatmap_image_url",
         ]
 
     def get_image_url(self, obj: Prediction) -> str | None:
@@ -60,6 +65,13 @@ class PredictionSerializer(serializers.ModelSerializer):
         if not obj.image:
             return None
         url = obj.image.url
+        return request.build_absolute_uri(url) if request is not None else url
+
+    def get_heatmap_image_url(self, obj: Prediction) -> str | None:
+        request = self.context.get("request")
+        if not obj.heatmap_image:
+            return None
+        url = obj.heatmap_image.url
         return request.build_absolute_uri(url) if request is not None else url
 
     def get_confidence_percentage(self, obj: Prediction) -> float:

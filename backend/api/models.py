@@ -163,6 +163,13 @@ class Prediction(models.Model):
         blank=True,
         help_text="Patient reported symptoms for BioBERT analysis.",
     )
+    
+    heatmap_image = models.ImageField(
+        upload_to="heatmaps/",
+        null=True,
+        blank=True,
+        help_text="Grad-CAM heatmap overlay image.",
+    )
 
     # --- Feedback / Active-learning fields ---
     true_class = models.CharField(

@@ -43,21 +43,28 @@ const Upload = () => {
         return;
       }
 
-      try {
-        const { width, height } = await getImageDimensions(picked);
-        if (width < MIN_DIM || height < MIN_DIM) {
-          setDimError(`Image is too small (${width}x${height}). Minimum is ${MIN_DIM}x${MIN_DIM}px.`);
-          toast.error("Image dimensions are too small for reliable analysis.");
+      const isDicom = picked.name.toLowerCase().endsWith(".dcm") || picked.name.toLowerCase().endsWith(".dicom");
+
+      if (!isDicom) {
+        try {
+          const { width, height } = await getImageDimensions(picked);
+          if (width < MIN_DIM || height < MIN_DIM) {
+            setDimError(`Image is too small (${width}x${height}). Minimum is ${MIN_DIM}x${MIN_DIM}px.`);
+            toast.error("Image dimensions are too small for reliable analysis.");
+            return;
+          }
+          setDimError("");
+        } catch {
+          toast.error("Could not read image dimensions.");
           return;
         }
+        setPreview(URL.createObjectURL(picked));
+      } else {
         setDimError("");
-      } catch {
-        toast.error("Could not read image dimensions.");
-        return;
+        setPreview("DICOM_PLACEHOLDER");
       }
 
       setFile(picked);
-      setPreview(URL.createObjectURL(picked));
     },
     [setFile]
   );
@@ -71,7 +78,9 @@ const Upload = () => {
     onDrop,
     accept: {
       "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"]
+      "image/png": [".png"],
+      "application/dicom": [".dcm", ".dicom"],
+      "": [".dcm", ".dicom"]
     },
     maxSize: MAX_FILE_SIZE_BYTES,
     multiple: false
@@ -108,7 +117,7 @@ const Upload = () => {
             <FiUser className="text-primary-400" /> Patient Details & NLP Options (Optional)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
+
             {/* Admins (Doctors) see the Name and Age fields */}
             {(user?.is_superuser || user?.role === 'DOCTOR') && (
               <>
@@ -205,7 +214,7 @@ const Upload = () => {
                   : "Drag and drop a chest X-ray, or click to browse"}
               </p>
               <p className="mt-1 text-xs text-slate-400">
-                Accepted formats: JPG, JPEG, PNG — Max size: 10MB — Min resolution: 224x224
+                Accepted formats: JPG, PNG, DICOM (PACS) — Max size: 10MB
               </p>
             </div>
             {file && (
@@ -227,14 +236,27 @@ const Upload = () => {
         {preview && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <figure className="bg-surface rounded-xl overflow-hidden border border-slate-800">
-              <img
-                src={preview}
-                alt="Selected chest X-ray preview"
-                className="w-full h-64 object-contain bg-black"
-              />
+              {preview === "DICOM_PLACEHOLDER" ? (
+                <div className="w-full h-64 bg-slate-900 flex flex-col items-center justify-center gap-3 border-b border-slate-800">
+                  <div className="h-16 w-16 rounded-lg bg-primary-500/20 flex items-center justify-center">
+                    <FiUploadCloud className="h-8 w-8 text-primary-400" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-slate-100">DICOM Medical File</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">PACS Standard Format</p>
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={preview}
+                  alt="Selected chest X-ray preview"
+                  className="w-full h-64 object-contain bg-black"
+                />
+              )}
               <figcaption className="px-4 py-2 text-xs text-slate-400">
-                Preview of the uploaded image. Ensure it is a clear, properly
-                centered chest X-ray.
+                {preview === "DICOM_PLACEHOLDER"
+                  ? "DICOM metadata will be extracted automatically upon analysis."
+                  : "Preview of the uploaded image. Ensure it is a clear, properly centered chest X-ray."}
               </figcaption>
             </figure>
             <div className="text-xs text-slate-400 space-y-2">

@@ -1,7 +1,10 @@
-export const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+export const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/dicom", ""];
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
-export const isImageFile = (file) => ACCEPTED_TYPES.includes(file.type);
+export const isImageFile = (file) => {
+  if (ACCEPTED_TYPES.includes(file.type)) return true;
+  return file.name.toLowerCase().endsWith(".dcm") || file.name.toLowerCase().endsWith(".dicom");
+};
 
 export const isWithinSizeLimit = (file) => file.size <= MAX_FILE_SIZE_BYTES;
 

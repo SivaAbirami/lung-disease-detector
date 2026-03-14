@@ -93,7 +93,15 @@ def validate_image_content(file_obj: IO[bytes]) -> None:
 
 def validate_xray_image(file_obj: IO[bytes], filename: str) -> None:
     """Run all validations required for a chest X-ray upload."""
+    from pathlib import Path
+    
     validate_file_extension(filename)
     validate_file_size(file_obj)
+    
+    # DICOM files have their own format; skip standard image validation
+    ext = Path(filename).suffix.lower()
+    if ext in (".dcm", ".dicom"):
+        return
+    
     validate_image_content(file_obj)
 

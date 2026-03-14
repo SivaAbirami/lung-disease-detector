@@ -6,7 +6,7 @@ import UrgencyBadge from "@components/common/UrgencyBadge";
 import { getPredictionHistory } from "@services/api";
 import { formatDate, truncateText } from "@utils/formatters";
 import PatientProgressChart from "./PatientProgressChart";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 const PER_PAGE = 10;
 

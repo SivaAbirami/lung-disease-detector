@@ -49,6 +49,31 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # DICOM conversion: convert .dcm files to PNG before processing
+        dicom_metadata = {}
+        from ml_model.dicom_utils import is_dicom_file
+        if is_dicom_file(file_obj.name):
+            try:
+                from ml_model.dicom_utils import convert_dicom_to_image
+                from django.core.files.uploadedfile import InMemoryUploadedFile
+                png_buffer, dicom_metadata = convert_dicom_to_image(file_obj)
+                # Replace the file object with the converted PNG
+                file_obj = InMemoryUploadedFile(
+                    file=png_buffer,
+                    field_name="image",
+                    name=file_obj.name.rsplit(".", 1)[0] + ".png",
+                    content_type="image/png",
+                    size=png_buffer.getbuffer().nbytes,
+                    charset=None,
+                )
+                logger.info("DICOM file converted to PNG, metadata: %s", dicom_metadata)
+            except Exception as exc:
+                logger.error("DICOM conversion failed: %s", exc)
+                return Response(
+                    {"detail": f"Failed to process DICOM file: {exc}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         try:
             # Hash-based caching
             image_hash = generate_image_hash(file_obj)
@@ -71,6 +96,15 @@ class PredictView(APIView):
                 patient_age = int(patient_age) if patient_age else None
             except (ValueError, TypeError):
                 patient_age = None
+            
+            # Auto-fill from DICOM metadata if user didn't provide values
+            if dicom_metadata:
+                if not patient_name and dicom_metadata.get("patient_name"):
+                    patient_name = dicom_metadata["patient_name"]
+                if not patient_age and dicom_metadata.get("patient_age"):
+                    patient_age = dicom_metadata["patient_age"]
+                if not patient_sex and dicom_metadata.get("patient_sex"):
+                    patient_sex = dicom_metadata["patient_sex"]
             
             language = request.data.get("language", "English") or "English"
 
@@ -375,3 +409,50 @@ class RetrainModelView(APIView):
             "task_id": task.id,
             "corrected_count": corrected_count
         })
+
+
+class DownloadReportView(APIView):
+    """Generate and return a PDF medical report for a given prediction."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, prediction_id: int, *args, **kwargs):
+        from django.http import FileResponse
+        from .reports import generate_medical_report
+
+        try:
+            prediction = Prediction.objects.get(id=prediction_id)
+        except Prediction.DoesNotExist:
+            return Response(
+                {"detail": "Prediction not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only allow owner or admin to download
+        if prediction.user and prediction.user != request.user and not request.user.is_superuser:
+            try:
+                if request.user.profile.role != "DOCTOR":
+                    return Response(
+                        {"detail": "Not authorized to view this report."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            except Exception:
+                return Response(
+                    {"detail": "Not authorized to view this report."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        try:
+            pdf_buffer = generate_medical_report(prediction)
+            response = FileResponse(
+                pdf_buffer,
+                content_type="application/pdf",
+                as_attachment=True,
+                filename=f"LDD_Report_{prediction.id}.pdf",
+            )
+            return response
+        except Exception as e:
+            logger.error("PDF report generation failed: %s", e, exc_info=True)
+            return Response(
+                {"detail": "Failed to generate report.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

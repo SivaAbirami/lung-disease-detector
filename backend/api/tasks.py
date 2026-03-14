@@ -101,6 +101,23 @@ def predict_image_task(self, prediction_id: int, language: str = "English") -> i
             "cached_result",
         ])
 
+        # Generate Grad-CAM heatmap overlay
+        try:
+            from ml_model.interpretability import create_gradcam_overlay
+            class_index = CLASS_NAMES.index(predicted_class)
+            heatmap_buffer = create_gradcam_overlay(image_path, class_index)
+            
+            from django.core.files.base import ContentFile
+            heatmap_filename = f"gradcam_{prediction.id}.jpg"
+            prediction.heatmap_image.save(
+                heatmap_filename,
+                ContentFile(heatmap_buffer.read()),
+                save=True,
+            )
+            logger.info("Grad-CAM heatmap saved for prediction %s", prediction.id)
+        except Exception as e:
+            logger.warning("Grad-CAM generation failed (non-fatal): %s", e)
+
         logger.info(
             "Prediction %s completed: %s (%.2f%%) in %.2f ms",
             prediction.id,

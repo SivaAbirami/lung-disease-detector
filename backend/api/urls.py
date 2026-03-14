@@ -12,6 +12,7 @@ from .views import (
     RegisterView,
     CustomTokenObtainPairView,
     RetrainModelView,
+    DownloadReportView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -33,6 +34,11 @@ urlpatterns = [
         "predictions/<int:prediction_id>/feedback/",
         PredictionFeedbackView.as_view(),
         name="prediction-feedback",
+    ),
+    path(
+        "predictions/<int:prediction_id>/report/",
+        DownloadReportView.as_view(),
+        name="download-report",
     ),
     path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
     

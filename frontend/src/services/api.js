@@ -73,5 +73,10 @@ export const getDashboardStats = () =>
 export const retrainModel = () =>
   api.post("/admin/retrain/").then((res) => res.data);
 
+export const downloadReport = (predictionId) =>
+  api.get(`/predictions/${predictionId}/report/`, {
+    responseType: "blob",
+  });
+
 
 export default api;

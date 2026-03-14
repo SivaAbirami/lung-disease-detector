@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft, FiShare2, FiAlertTriangle, FiCheck } from "react-icons/fi";
+import { FiArrowLeft, FiShare2, FiAlertTriangle, FiCheck, FiDownload, FiInfo } from "react-icons/fi";
 import toast from "react-hot-toast";
 import UrgencyBadge from "@components/common/UrgencyBadge";
-import ReportGenerator from "@components/ReportGenerator";
+
 import { formatDate, formatConfidence } from "@utils/formatters";
-import { submitFeedback } from "@services/api";
+import { submitFeedback, downloadReport } from "@services/api";
 
 const DISEASE_CLASSES = [
   "Normal",
@@ -29,6 +29,8 @@ const Result = () => {
   const [selectedClass, setSelectedClass] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedbackDone, setFeedbackDone] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(true);
 
   const handleShare = async () => {
     try {
@@ -44,6 +46,25 @@ const Result = () => {
       }
     } catch {
       // ignore share errors
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      const response = await downloadReport(prediction.id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `LDD_Report_${prediction.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Medical report downloaded successfully.");
+    } catch (error) {
+      console.error("Download failed", error);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -112,6 +133,15 @@ const Result = () => {
           />
           <button
             type="button"
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-500 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+          >
+            <FiDownload className="h-4 w-4" />
+            {downloading ? "Generating..." : "Download Report"}
+          </button>
+          <button
+            type="button"
             onClick={handleShare}
             className="inline-flex items-center gap-1 rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
           >
@@ -122,16 +152,40 @@ const Result = () => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <div className="bg-surface rounded-xl border border-slate-800 overflow-hidden shadow-card">
-            {prediction.image_url && (
+        <div className="md:col-span-1 space-y-4">
+          <div className="bg-surface rounded-xl border border-slate-800 overflow-hidden shadow-card relative group">
+            {showHeatmap && prediction.heatmap_image_url ? (
+              <img
+                src={prediction.heatmap_image_url}
+                alt="AI Heatmap overlay"
+                className="w-full h-64 object-contain bg-black"
+              />
+            ) : prediction.image_url ? (
               <img
                 src={prediction.image_url}
                 alt="Chest X-ray analyzed"
                 className="w-full h-64 object-contain bg-black"
               />
+            ) : null}
+
+            {prediction.heatmap_image_url && (
+              <button
+                onClick={() => setShowHeatmap(!showHeatmap)}
+                className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-200 hover:bg-primary-600/80 transition-all flex items-center gap-1"
+              >
+                {showHeatmap ? "View Original" : "View AI Heatmap"}
+              </button>
             )}
           </div>
+
+          {prediction.heatmap_image_url && showHeatmap && (
+            <div className="p-3 rounded-lg bg-primary-950/20 border border-primary-900/40 text-[10px] text-primary-300 flex gap-2">
+              <FiInfo className="shrink-0 h-4 w-4" />
+              <p>
+                <span className="font-bold">AI AI Interpretability (Grad-CAM):</span> The highlighted areas show where the AI focused its attention to make this diagnosis. Warmer colors (red/orange) indicate higher relevance.
+              </p>
+            </div>
+          )}
         </div>
         <div className="md:col-span-2 space-y-4">
           <div className="bg-surface rounded-lg border border-slate-800 p-4 space-y-2">
@@ -294,7 +348,7 @@ const Result = () => {
         </div>
       </div>
 
-      <ReportGenerator prediction={prediction} />
+
     </section>
   );
 };

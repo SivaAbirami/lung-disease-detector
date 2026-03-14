@@ -165,7 +165,7 @@ MEDIA_ROOT = config("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
 MIN_IMAGE_WIDTH: int = 224
 MIN_IMAGE_HEIGHT: int = 224
-ALLOWED_IMAGE_EXTENSIONS: tuple[str, ...] = (".jpg", ".jpeg", ".png")
+ALLOWED_IMAGE_EXTENSIONS: tuple[str, ...] = (".jpg", ".jpeg", ".png", ".dcm", ".dicom")
 
 
 # -----------------------------------------------------------------------------

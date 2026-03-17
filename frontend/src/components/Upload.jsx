@@ -114,7 +114,7 @@ const Upload = () => {
         {/* Patient Details Section */}
         <div className="bg-surface rounded-xl p-6 border border-slate-700 shadow-card space-y-4">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <FiUser className="text-primary-400" /> Patient Details & NLP Options (Optional)
+            <FiUser className="text-blue-400" /> Patient Details & NLP Options (Optional)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
@@ -129,7 +129,7 @@ const Upload = () => {
                     type="text"
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
                     placeholder="e.g. John Doe"
                   />
                 </div>
@@ -143,7 +143,7 @@ const Upload = () => {
                     onChange={(e) => setPatientAge(e.target.value)}
                     min="0"
                     max="150"
-                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                    className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
                     placeholder="e.g. 45"
                   />
                 </div>
@@ -156,7 +156,7 @@ const Upload = () => {
               <select
                 value={patientSex}
                 onChange={(e) => setPatientSex(e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               >
                 <option value="">Select...</option>
                 <option value="M">Male</option>
@@ -171,7 +171,7 @@ const Upload = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               >
                 <option value="English">English</option>
                 <option value="Spanish">Spanish</option>
@@ -190,7 +190,7 @@ const Upload = () => {
               <textarea
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none h-20 resize-none"
+                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none h-20 resize-none"
                 placeholder="Describe current symptoms (e.g. fever, cough, shortness of breath) for AI analysis..."
               />
             </div>
@@ -199,13 +199,13 @@ const Upload = () => {
 
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-6 bg-surface shadow-card cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDragActive ? "border-primary-500 bg-slate-900" : "border-slate-700"
+          className={`border-2 border-dashed rounded-xl p-6 bg-surface shadow-card cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${isDragActive ? "border-blue-500 bg-slate-900/50" : "border-slate-700 hover:border-slate-600 transition-colors"
             }`}
         >
           <input {...getInputProps()} aria-label="Upload chest X-ray image" />
           <div className="flex flex-col items-center gap-3 text-center">
-            <div className="h-12 w-12 rounded-full bg-slate-900 flex items-center justify-center">
-              <FiUploadCloud className="h-6 w-6 text-primary-400" aria-hidden="true" />
+            <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center">
+              <FiUploadCloud className="h-6 w-6 text-blue-400" aria-hidden="true" />
             </div>
             <div>
               <p className="text-sm font-medium text-slate-100">
@@ -238,8 +238,8 @@ const Upload = () => {
             <figure className="bg-surface rounded-xl overflow-hidden border border-slate-800">
               {preview === "DICOM_PLACEHOLDER" ? (
                 <div className="w-full h-64 bg-slate-900 flex flex-col items-center justify-center gap-3 border-b border-slate-800">
-                  <div className="h-16 w-16 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                    <FiUploadCloud className="h-8 w-8 text-primary-400" />
+                  <div className="h-16 w-16 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <FiUploadCloud className="h-8 w-8 text-blue-400" />
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold text-slate-100">DICOM Medical File</p>
@@ -278,7 +278,7 @@ const Upload = () => {
         <div className="flex items-center gap-3 mt-4">
           <button
             type="submit"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xl shadow-blue-500/20 hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
             disabled={!file || isSubmitting || isPolling}
           >
             {isSubmitting || isPolling ? "Processing..." : "Analyze X-ray"}

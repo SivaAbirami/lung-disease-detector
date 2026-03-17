@@ -46,7 +46,7 @@ const Register = () => {
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Choose a username"
                                 required
                             />
@@ -63,7 +63,7 @@ const Register = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -79,7 +79,7 @@ const Register = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="••••••••"
                                 required
                             />
@@ -91,7 +91,7 @@ const Register = () => {
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-                            className="block w-full px-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="block w-full px-3 py-2 border border-slate-600 rounded-lg bg-background text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                             <option value="PATIENT">Patient</option>
                             <option value="DOCTOR">Doctor</option>
@@ -100,7 +100,7 @@ const Register = () => {
 
                     <button
                         type="submit"
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-xl shadow-blue-500/10 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95"
                     >
                         Create Account
                     </button>
@@ -108,7 +108,7 @@ const Register = () => {
 
                 <p className="mt-6 text-center text-sm text-slate-400">
                     Already have an account?{" "}
-                    <Link to="/login" className="font-medium text-primary-400 hover:text-primary-300">
+                    <Link to="/login" className="font-medium text-blue-400 hover:text-blue-300">
                         Sign in
                     </Link>
                 </p>

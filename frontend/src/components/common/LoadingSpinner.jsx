@@ -15,7 +15,7 @@ const LoadingSpinner = ({ size = "md", overlay = false, label = "Loading" }) => 
       aria-label={label}
     >
       <svg
-        className={`animate-spin text-primary-500 ${sizeMap[size]}`}
+        className={`animate-spin text-blue-500 ${sizeMap[size]}`}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

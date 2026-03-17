@@ -135,7 +135,7 @@ const Result = () => {
             type="button"
             onClick={handleDownloadPDF}
             disabled={downloading}
-            className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-500 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 shadow-lg transition-all active:scale-95 disabled:opacity-50"
           >
             <FiDownload className="h-4 w-4" />
             {downloading ? "Generating..." : "Download Report"}
@@ -171,7 +171,7 @@ const Result = () => {
             {prediction.heatmap_image_url && (
               <button
                 onClick={() => setShowHeatmap(!showHeatmap)}
-                className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-200 hover:bg-primary-600/80 transition-all flex items-center gap-1"
+                className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-200 hover:bg-blue-600 transition-all flex items-center gap-1"
               >
                 {showHeatmap ? "View Original" : "View AI Heatmap"}
               </button>
@@ -202,7 +202,7 @@ const Result = () => {
               </div>
               <div className="mt-1 h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                 <div
-                  className="h-full bg-primary-500"
+                  className="h-full bg-blue-500 shadow-sm shadow-blue-500/50"
                   style={{ width: `${prediction.confidence_percentage.toFixed(2)}%` }}
                 />
               </div>
@@ -233,7 +233,7 @@ const Result = () => {
                         type="button"
                         onClick={() => setSelectedClass(cls)}
                         className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${selectedClass === cls
-                          ? "border-primary-500 bg-primary-500/20 text-primary-300"
+                          ? "border-blue-500 bg-blue-500/20 text-blue-300"
                           : "border-slate-600 text-slate-300 hover:bg-slate-700"
                           }`}
                       >
@@ -246,7 +246,7 @@ const Result = () => {
                       type="button"
                       onClick={handleFeedbackSubmit}
                       disabled={submitting || !selectedClass}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-xs font-medium text-white hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {submitting ? "Submitting…" : "Submit Correction"}
                     </button>

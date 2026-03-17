@@ -30,7 +30,7 @@ export const usePrediction = () => {
   const { isPolling } = usePolling(startPolling, {
     enabled: !!taskId,
     interval: 1500,
-    maxAttempts: 40
+    maxAttempts: 120
   });
 
   const submit = async (extraData = {}) => {

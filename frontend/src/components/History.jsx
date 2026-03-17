@@ -57,7 +57,7 @@ const History = () => {
             <input
               type="text"
               placeholder="Search by ID or disease"
-              className="pl-7 pr-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
+              className="pl-7 pr-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
               value={search}
               onChange={(e) => {
                 setPage(1);
@@ -66,7 +66,7 @@ const History = () => {
             />
           </div>
           <select
-            className="text-xs bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-slate-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
+            className="text-xs bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-slate-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
             value={diseaseFilter}
             onChange={(e) => {
               setPage(1);

@@ -4,8 +4,8 @@ import { FiActivity } from "react-icons/fi";
 
 const navLinkClass = ({ isActive }) =>
   [
-    "px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
-    isActive ? "bg-slate-800 text-primary-50" : "text-slate-300 hover:bg-slate-800"
+    "px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all",
+    isActive ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-300 hover:bg-slate-800 hover:text-white"
   ].join(" ");
 
 import { useAuth } from "../../context/AuthContext";
@@ -20,8 +20,8 @@ const Navbar = () => {
         className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between"
         aria-label="Main navigation"
       >
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-full bg-primary-500 flex items-center justify-center shadow-lg">
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="h-9 w-9 rounded-full bg-blue-500 flex items-center justify-center shadow-lg group-hover:bg-blue-400 transition-colors">
             <FiActivity className="text-white" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
@@ -69,7 +69,7 @@ const Navbar = () => {
               </Link>
               <Link
                 to="/register"
-                className="bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+                className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all shadow-md shadow-blue-500/20 active:scale-95"
               >
                 Get Started
               </Link>
